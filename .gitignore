@@ -1,0 +1,27 @@
+# Ignorar el ejecutable
+runmlaberintos.exe
+
+# Ignorar la librería json.hpp si está en la raíz del proyecto
+json.hpp
+
+# Ignorar archivos temporales de C++
+*.o
+*.obj
+*.out
+*.log
+*.tmp
+*.bak
+
+# Ignorar carpetas comunes de librerías (por si luego agregas más)
+libs/
+external/
+third_party/
+
+# Ignorar configuración local de VS Code
+.vscode/
+
+# Archivos de sistema o respaldo
+*~
+*.swp
+.DS_Store
+Thumbs.db
