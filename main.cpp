@@ -69,10 +69,6 @@ class Jugador{
         }
     }
 
-    /*void dibujarJugador(RenderWindow& window){
-        window.draw(jugador);
-    }*/
-
     RectangleShape getJugador(){
         return jugador;
     }
@@ -80,26 +76,9 @@ class Jugador{
 };
 
 void inicioJuego(string grid[][10], int& jugadorx, int& jugadory, RectangleShape malla[][cols]){
-    /*ifstream archivoJson("laberinto.json");
-    if (!archivoJson) {
-        cout << "No se pudo abrir laberinto.json" << endl;
-        exit(1);
-    }
-    json dataLaberinto;
-    archivoJson >> dataLaberinto;
-    int fila = dataLaberinto["width"];
-    int columna = dataLaberinto["height"];
-    string grid[fila][columna];*/ //= dataLaberinto["grid"];
-    //archivoJson.close();
-
     
     for (int i = 0; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
-            //grid[i][j] = dataLaberinto["grid"][i][j];
-            //arr[i][j] = dataLaberinto["grid"][i][j][0];  // porque es string -> char
-            
-            //arr[i][j] = dataLaberinto["grid"][i][j].get<string>()[aux];
-            //archivoJson >> arr[i][j];
 
             if(grid[i][j] == "#"){                                      //Pared
                 malla[i][j].setPosition({(float)j*50.f, (float)i*50});  //Posicion de pared
@@ -143,8 +122,6 @@ void inicioJuego(string grid[][10], int& jugadorx, int& jugadory, RectangleShape
 int main(){
 
     RenderWindow window(VideoMode({600, 600}), "Laberinto infectado con virus", Style::Close | Style::Titlebar); //Creo ventana
-    /*RectangleShape celda(Vector2f(50.f, 50.f));  //Creo malla para laberintos
-    RectangleShape player;*/
 
     ifstream archivoJson("laberinto.json");
     if (!archivoJson) {
@@ -163,8 +140,6 @@ int main(){
         }
     }
 
-
-    //char arr[rows][cols];
     RectangleShape malla[rows][cols];
     
     int x, y;
@@ -177,8 +152,6 @@ int main(){
             if (event->is<Event::Closed>()){
                 window.close();
             }
-            /*if(event->is<Event::KeyPressed>() &&
-         event->getIf<Event::KeyPressed>()->code == Keyboard::Key::Left){*/
             if(Keyboard::isKeyPressed(sf::Keyboard::Key::Left)){
                 //celda.move({-10.f, 0.f});
                 p.moverJugador('L', grid);
@@ -196,33 +169,6 @@ int main(){
         }
 
         window.clear(Color::White);
-        /*for (int y = 0; y < height; ++y) {
-            for (int x = 0; x < width; ++x) {
-                
-                celda.setPosition({x*50.f, y*50.f});         //Posicion de cada celda
-                celda.setOutlineThickness(2.0f);             //Grosor de lineas divisoras
-                celda.setOutlineColor(Color::Black);         //Color lineas divisoras
-
-                //colorear celda
-                //#:pared | .: celda libre | S: punto de partida | G: Meta | K: item | 
-                if (grid[y][x] == "#"){
-                    celda.setFillColor(Color::Black);
-                }
-                if (grid[y][x] == "."){
-                    celda.setFillColor(Color::White);
-                }
-                if (grid[y][x] == "S"){
-                    celda.setFillColor(Color::Green);
-                }
-                if (grid[y][x] == "G"){
-                    celda.setFillColor(Color::Red);
-                }
-                if (grid[y][x] == "K"){
-                    celda.setFillColor(Color::Yellow);
-                }
-                window.draw(celda);
-            }
-        }*/
 
         for(int i = 0; i < rows; i++){
             for(int j = 0; j < cols; j++){
