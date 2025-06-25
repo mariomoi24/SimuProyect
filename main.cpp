@@ -1,0 +1,237 @@
+#include <iostream>
+#include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
+#include <SFML/Window.hpp>
+#include <SFML/Audio.hpp>
+#include <SFML/Window/Event.hpp>
+#include <bits/stdc++.h>
+#include <cmath>
+#include <fstream>
+#include <cstdlib>
+#include "json.hpp"
+
+using namespace std;
+using namespace sf;
+using json = nlohmann::json;
+
+
+const int rows = 10;
+const int cols = 10;
+
+
+
+class Jugador{
+    private:
+    int jugadori,  jugadorj;
+    RectangleShape jugador;
+    public:
+        Jugador(int x, int y, string grid[][10]){
+            jugadori = x;
+            jugadorj = y;
+            jugador.setSize({48, 48});
+            jugador.setPosition({y*50.f, x*50.f});         
+            jugador.setOutlineThickness(2.0f);             
+            jugador.setOutlineColor(Color::Black);
+            jugador.setFillColor(Color::Magenta);
+
+        }
+
+    void moverJugador(char direccion, string grid[][10]){
+
+        switch(direccion){
+            case 'L':
+                if(jugadorj-1 > 0 && grid[jugadori][jugadorj-1] != "#"){
+                    jugador.move({-50,0});
+                    jugadorj--;
+                }
+                break;
+            case 'R':
+               if(grid[jugadori][jugadorj+1] != "#" && (jugadorj < cols-1)){
+                    jugador.move({50,0});
+                    jugadorj++;
+                }
+                break;
+            case 'U':
+                if(grid[jugadori-1][jugadorj] != "#" && (jugadori > 0)){
+                    jugador.move({0,-50});
+                    jugadori--;
+                }
+                break;
+            case 'D':
+                if(grid[jugadori+1][jugadorj] != "#" && (jugadori < rows-1)){
+                    jugador.move({0,50});
+                    jugadori++;
+                }
+                break;
+            default:
+                break;
+
+        }
+    }
+
+    /*void dibujarJugador(RenderWindow& window){
+        window.draw(jugador);
+    }*/
+
+    RectangleShape getJugador(){
+        return jugador;
+    }
+
+};
+
+void inicioJuego(string grid[][10], int& jugadorx, int& jugadory, RectangleShape malla[][cols]){
+    /*ifstream archivoJson("laberinto.json");
+    if (!archivoJson) {
+        cout << "No se pudo abrir laberinto.json" << endl;
+        exit(1);
+    }
+    json dataLaberinto;
+    archivoJson >> dataLaberinto;
+    int fila = dataLaberinto["width"];
+    int columna = dataLaberinto["height"];
+    string grid[fila][columna];*/ //= dataLaberinto["grid"];
+    //archivoJson.close();
+
+    
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            //grid[i][j] = dataLaberinto["grid"][i][j];
+            //arr[i][j] = dataLaberinto["grid"][i][j][0];  // porque es string -> char
+            
+            //arr[i][j] = dataLaberinto["grid"][i][j].get<string>()[aux];
+            //archivoJson >> arr[i][j];
+
+            if(grid[i][j] == "#"){                                      //Pared
+                malla[i][j].setPosition({(float)j*50.f, (float)i*50});  //Posicion de pared
+                malla[i][j].setSize({50, 50});                          //Tamanio
+                malla[i][j].setOutlineThickness(2.0f);                  //Grosor lineas divisoras
+                malla[i][j].setOutlineColor(Color::Black);              //Color lineas divisoras
+                malla[i][j].setFillColor(Color::Black);                 //Color solido para celda
+            }else if(grid[i][j] == "S"){                                //Inicio partida jugador
+                jugadorx = i;
+                jugadory = j;
+
+            }else if(grid[i][j] == "."){                                //Espacio
+                malla[i][j].setPosition({static_cast<float>(j)*50.f, static_cast<float>(i)*50.f});
+                malla[i][j].setSize({50, 50});
+                malla[i][j].setOutlineThickness(2.0f);             
+                malla[i][j].setOutlineColor(Color::Black);
+                malla[i][j].setFillColor(Color::White);
+            }else if(grid[i][j] == "K"){                                //Item
+                malla[i][j].setPosition({static_cast<float>(j)*50.f, static_cast<float>(i)*50.f});
+                malla[i][j].setSize({50, 50});
+                malla[i][j].setOutlineThickness(2.0f);             
+                malla[i][j].setOutlineColor(Color::Black);
+                malla[i][j].setFillColor(Color::Green);
+
+            }else{                                                      //Meta
+                malla[i][j].setPosition({(float)j*50.f, (float)i*50});         
+                malla[i][j].setSize({50, 50});
+                malla[i][j].setOutlineThickness(2.0f);             
+                malla[i][j].setOutlineColor(Color::Black);
+                malla[i][j].setFillColor(Color::White);
+            }
+            
+
+        }
+    }
+
+
+}
+
+
+int main(){
+
+    RenderWindow window(VideoMode({600, 600}), "Laberinto infectado con virus", Style::Close | Style::Titlebar); //Creo ventana
+    /*RectangleShape celda(Vector2f(50.f, 50.f));  //Creo malla para laberintos
+    RectangleShape player;*/
+
+    ifstream archivoJson("laberinto.json");
+    if (!archivoJson) {
+        cout << "No se pudo abrir laberinto.json" << endl;
+        exit(1);
+    }
+    json dataLaberinto;
+    archivoJson >> dataLaberinto;
+    const int fila = dataLaberinto["width"];
+    const int columna = dataLaberinto["height"];
+    string grid[rows][cols];
+
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            grid[i][j] = dataLaberinto["grid"][i][j];
+        }
+    }
+
+
+    //char arr[rows][cols];
+    RectangleShape malla[rows][cols];
+    
+    int x, y;
+    inicioJuego(grid, x, y, malla);
+    Jugador p(x, y, grid);
+
+    while (window.isOpen()){                                    
+        while (const optional event = window.pollEvent()){
+            
+            if (event->is<Event::Closed>()){
+                window.close();
+            }
+            /*if(event->is<Event::KeyPressed>() &&
+         event->getIf<Event::KeyPressed>()->code == Keyboard::Key::Left){*/
+            if(Keyboard::isKeyPressed(sf::Keyboard::Key::Left)){
+                //celda.move({-10.f, 0.f});
+                p.moverJugador('L', grid);
+            }
+            if(Keyboard::isKeyPressed(sf::Keyboard::Key::Right)){
+                p.moverJugador('R', grid);
+            }
+            if(Keyboard::isKeyPressed(sf::Keyboard::Key::Up)){
+                p.moverJugador('U', grid);
+            }
+            if(Keyboard::isKeyPressed(sf::Keyboard::Key::Down)){
+                p.moverJugador('D', grid);
+            } 
+
+        }
+
+        window.clear(Color::White);
+        /*for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                
+                celda.setPosition({x*50.f, y*50.f});         //Posicion de cada celda
+                celda.setOutlineThickness(2.0f);             //Grosor de lineas divisoras
+                celda.setOutlineColor(Color::Black);         //Color lineas divisoras
+
+                //colorear celda
+                //#:pared | .: celda libre | S: punto de partida | G: Meta | K: item | 
+                if (grid[y][x] == "#"){
+                    celda.setFillColor(Color::Black);
+                }
+                if (grid[y][x] == "."){
+                    celda.setFillColor(Color::White);
+                }
+                if (grid[y][x] == "S"){
+                    celda.setFillColor(Color::Green);
+                }
+                if (grid[y][x] == "G"){
+                    celda.setFillColor(Color::Red);
+                }
+                if (grid[y][x] == "K"){
+                    celda.setFillColor(Color::Yellow);
+                }
+                window.draw(celda);
+            }
+        }*/
+
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < cols; j++){
+                window.draw(malla[i][j]);
+            }
+        }
+
+        window.draw(p.getJugador());
+        window.display();
+    }
+    return 0;
+}
