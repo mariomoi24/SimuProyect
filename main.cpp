@@ -6,11 +6,8 @@ using namespace std;
 using namespace sf;
 using json = nlohmann::json;
 
-
 const int rows = 10;
 const int cols = 10;
-
-
 
 class Jugador{
     private:
@@ -25,7 +22,6 @@ class Jugador{
             jugador.setOutlineThickness(2.0f);             
             jugador.setOutlineColor(Color::Black);
             jugador.setFillColor(Color::Magenta);
-
         }
 
     void moverJugador(char direccion, string grid[][10]){
@@ -60,14 +56,103 @@ class Jugador{
 
         }
     }
-
     RectangleShape getJugador(){
         return jugador;
     }
 
 };
 
-void inicioJuego(string grid[][10], int& jugadorx, int& jugadory, RectangleShape malla[][cols]){
+void inicioJuego(string grid[][10], int& jugadorx, int& jugadory, RectangleShape malla[][cols], int& virusFila, int& virusColumna);
+
+int main(){
+    RenderWindow window(VideoMode({600, 600}), "Laberinto infectado con virus", Style::Close | Style::Titlebar); //Creo ventana
+
+    ifstream archivoJson("laberinto.json");
+    if (!archivoJson) {
+        cout << "No se pudo abrir laberinto.json" << endl;
+        exit(1);
+    }
+    json dataLaberinto;
+    archivoJson >> dataLaberinto;
+    const int fila = dataLaberinto["width"];
+    const int columna = dataLaberinto["height"];
+    string grid[rows][cols];
+
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            grid[i][j] = dataLaberinto["grid"][i][j];
+        }
+    }
+
+    RectangleShape malla[rows][cols];
+    int x, y;
+    int virusFila, virusColumna;
+    inicioJuego(grid, x, y, malla, virusFila, virusColumna);
+    Jugador p(x, y);
+
+    Clock relojVirus;
+    float intervaloCambio = 1.5f;                               // segundos entre mutaciones
+
+    while (window.isOpen()){                                    
+        while (const optional event = window.pollEvent()){       
+            if (event->is<Event::Closed>()){
+                window.close();
+            }
+            if(Keyboard::isKeyPressed(sf::Keyboard::Key::Left)){
+                p.moverJugador('L', grid);
+            }
+            if(Keyboard::isKeyPressed(sf::Keyboard::Key::Right)){
+                p.moverJugador('R', grid);
+            }
+            if(Keyboard::isKeyPressed(sf::Keyboard::Key::Up)){
+                p.moverJugador('U', grid);
+            }
+            if(Keyboard::isKeyPressed(sf::Keyboard::Key::Down)){
+                p.moverJugador('D', grid);
+            } 
+
+        }
+
+        window.clear(Color::White);
+
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < cols; j++){
+                window.draw(malla[i][j]);
+            }
+        }
+
+        window.draw(p.getJugador());
+        window.display();
+
+        if (relojVirus.getElapsedTime().asSeconds() >= intervaloCambio) {
+            for (int di = -1; di <= 1; ++di) {
+                for (int dj = -1; dj <= 1; ++dj) {
+                    int ni = virusFila + di;
+                    int nj = virusColumna + dj;
+
+                    if (ni >= 0 && ni < rows && nj >= 0 && nj < cols) {
+                        if (grid[ni][nj] == "#" || grid[ni][nj] == ".") {
+                            if (rand() % 100 < 25) {                    // 25% de probabilidad por celda
+                                if (grid[ni][nj] == "#") {
+                                    grid[ni][nj] = ".";
+                                    malla[ni][nj].setFillColor(Color::White);
+                                } else {
+                                    grid[ni][nj] = "#";
+                                    malla[ni][nj].setFillColor(Color::Black);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            relojVirus.restart();                           // reiniciar el reloj solo si hizo cambios
+        }
+
+    }
+    return 0;
+}
+
+void inicioJuego(string grid[][10], int& jugadorx, int& jugadory, RectangleShape malla[][cols], int& virusFila, int& virusColumna){
     
     for (int i = 0; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
@@ -95,6 +180,14 @@ void inicioJuego(string grid[][10], int& jugadorx, int& jugadory, RectangleShape
                 malla[i][j].setOutlineColor(Color::Black);
                 malla[i][j].setFillColor(Color::Green);
 
+            }else if(grid[i][j] == "V"){                                 //Virus
+                malla[i][j].setPosition({(float)j*50.f, (float)i*50});         
+                malla[i][j].setSize({50, 50});
+                malla[i][j].setOutlineThickness(2.0f);             
+                malla[i][j].setOutlineColor(Color::Red);
+                malla[i][j].setFillColor(Color::White);
+                virusFila = i;
+                virusColumna = j;
             }else{                                                      //Meta
                 malla[i][j].setPosition({(float)j*50.f, (float)i*50});         
                 malla[i][j].setSize({50, 50});
@@ -102,74 +195,8 @@ void inicioJuego(string grid[][10], int& jugadorx, int& jugadory, RectangleShape
                 malla[i][j].setOutlineColor(Color::Black);
                 malla[i][j].setFillColor(Color::White);
             }
-            
-
         }
     }
-
 
 }
 
-
-int main(){
-
-    RenderWindow window(VideoMode({600, 600}), "Laberinto infectado con virus", Style::Close | Style::Titlebar); //Creo ventana
-
-    ifstream archivoJson("laberinto.json");
-    if (!archivoJson) {
-        cout << "No se pudo abrir laberinto.json" << endl;
-        exit(1);
-    }
-    json dataLaberinto;
-    archivoJson >> dataLaberinto;
-    const int fila = dataLaberinto["width"];
-    const int columna = dataLaberinto["height"];
-    string grid[rows][cols];
-
-    for (int i = 0; i < rows; ++i) {
-        for (int j = 0; j < cols; ++j) {
-            grid[i][j] = dataLaberinto["grid"][i][j];
-        }
-    }
-
-    RectangleShape malla[rows][cols];
-    
-    int x, y;
-    inicioJuego(grid, x, y, malla);
-    Jugador p(x, y);
-
-    while (window.isOpen()){                                    
-        while (const optional event = window.pollEvent()){
-            
-            if (event->is<Event::Closed>()){
-                window.close();
-            }
-            if(Keyboard::isKeyPressed(sf::Keyboard::Key::Left)){
-                //celda.move({-10.f, 0.f});
-                p.moverJugador('L', grid);
-            }
-            if(Keyboard::isKeyPressed(sf::Keyboard::Key::Right)){
-                p.moverJugador('R', grid);
-            }
-            if(Keyboard::isKeyPressed(sf::Keyboard::Key::Up)){
-                p.moverJugador('U', grid);
-            }
-            if(Keyboard::isKeyPressed(sf::Keyboard::Key::Down)){
-                p.moverJugador('D', grid);
-            } 
-
-        }
-
-        window.clear(Color::White);
-
-        for(int i = 0; i < rows; i++){
-            for(int j = 0; j < cols; j++){
-                window.draw(malla[i][j]);
-            }
-        }
-
-        window.draw(p.getJugador());
-        window.display();
-    }
-    return 0;
-}
