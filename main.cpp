@@ -1,13 +1,5 @@
-#include <iostream>
-#include <SFML/Graphics.hpp>
-#include <SFML/System.hpp>
-#include <SFML/Window.hpp>
-#include <SFML/Audio.hpp>
-#include <SFML/Window/Event.hpp>
 #include <bits/stdc++.h>
-#include <cmath>
-#include <fstream>
-#include <cstdlib>
+#include <SFML/Graphics.hpp>
 #include "json.hpp"
 
 using namespace std;
