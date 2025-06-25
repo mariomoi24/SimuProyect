@@ -17,7 +17,7 @@ class Jugador{
     int jugadori,  jugadorj;
     RectangleShape jugador;
     public:
-        Jugador(int x, int y, string grid[][10]){
+        Jugador(int x, int y){
             jugadori = x;
             jugadorj = y;
             jugador.setSize({48, 48});
@@ -136,7 +136,7 @@ int main(){
     
     int x, y;
     inicioJuego(grid, x, y, malla);
-    Jugador p(x, y, grid);
+    Jugador p(x, y);
 
     while (window.isOpen()){                                    
         while (const optional event = window.pollEvent()){
